@@ -1,11 +1,13 @@
 import { Application, Request, Response } from "express";
 import auth from "./router/authRouter";
-import chat from "./router/chatRouter";
 import chatMessage from "./router/chatMessageRouter";
+import chat from "./router/chatRouter";
+import notice from "./router/notifyRouter";
 export const mainApp = (app: Application) => {
   try {
     app.use("/api/", auth);
     app.use("/api/", chat);
+    app.use("/api/", notice);
     app.use("/api/", chatMessage);
 
     app.get("/", (req: Request, res: Response) => {
