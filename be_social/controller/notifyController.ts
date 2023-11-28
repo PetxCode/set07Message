@@ -16,6 +16,7 @@ export const createNotice = async (req: Request, res: Response) => {
 
     await channel.consume("sendChat", async (res: any) => {
       newData.push(await JSON.parse(res?.content.toString()));
+      console.log(res);
 
       await channel.sendToQueue("send", Buffer.from(JSON.stringify(res)));
 

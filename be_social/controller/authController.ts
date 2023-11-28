@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import authModel from "../model/authModel";
-
+import amqplib from "amqplib";
 export const createAuth = async (req: Request, res: Response) => {
   try {
     const { userName, email, password } = req.body;
@@ -26,6 +26,38 @@ export const findAuth = async (req: Request, res: Response) => {
       message: "find auth",
       data: auth,
     });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error",
+    });
+  }
+};
+
+export const updateAuth = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+    const { userName } = req.body;
+    const auth = await authModel.findById(userID);
+
+    if (auth) {
+      const user = await authModel.findByIdAndUpdate(
+        userID,
+        {
+          userName,
+        },
+        { new: true }
+      );
+      const URL: string = "amqp://localhost:5672";
+      const connect = await amqplib.connect(URL);
+      const channel = await connect.createChannel();
+
+      await channel.sendToQueue("sendChat", Buffer.from(JSON.stringify(user)));
+
+      return res.status(200).json({
+        message: "find auth",
+        data: user,
+      });
+    }
   } catch (error) {
     return res.status(404).json({
       message: "Error",

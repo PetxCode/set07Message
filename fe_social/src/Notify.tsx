@@ -6,16 +6,18 @@ const URL: string = "http://localhost:3322";
 const socket = io(URL);
 const Notify = () => {
   const [state, setState]: any = useState<Array<{}>>([]);
+  const readState = JSON.parse(localStorage.getItem("notice")!);
 
   useEffect(() => {
     socket.on("set07i", (res) => {
-      console.log(res);
+      console.log("socket: ", res);
       setState(res);
+
       localStorage.setItem("notice", JSON.stringify(res));
     });
   }, []);
 
-  const readState = JSON.parse(localStorage.getItem("notice")!);
+  console.log("reading: ", state);
 
   return (
     <div>

@@ -6,6 +6,7 @@ import { Server, Socket } from "socket.io";
 import http from "http";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import amqplib from "amqplib";
+import notificationModel from "./model/notificationModel";
 
 const port: number = 3322;
 const app: Application = express();
@@ -38,13 +39,31 @@ io.on(
 
     const connect = await amqplib.connect(URL);
     const channel = await connect.createChannel();
-    await channel.assertQueue("send");
-    await channel.consume("send", async (res: any) => {
+    await channel.assertQueue("sendChat");
+
+    await channel.consume("sendChat", async (res: any) => {
       newData.push(await JSON.parse(res?.content.toString()));
+
+      await notificationModel.create({
+        notice: {
+          data: await JSON.parse(res?.content.toString()),
+          message: "coming from chat",
+        },
+      });
+      console.log(newData);
 
       socket.emit("set07i", await newData);
 
       await channel.ack(res);
     });
+
+    // await channel.consume("send", async (res: any) => {
+    //   newData.push(await JSON.parse(res?.content.toString()));
+    //   console.log(res);
+    //   console.log(newData);
+    //   socket.emit("set07i", await newData);
+
+    //   await channel.ack(res);
+    // });
   }
 );
